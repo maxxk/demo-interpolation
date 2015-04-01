@@ -1,0 +1,18 @@
+<link rel="import" href="../bower_components/code-mirror/code-mirror.html">
+
+<polymer-element name="code-mirror-ext" extends="code-mirror">
+  <template>
+    <shadow></shadow>
+  </template>
+  <script>
+  Polymer({
+    ready: function() {
+      this.super()
+      var self = this;
+      this.mirror.on("change", function(){
+        self.value = self.mirror.getValue();
+      });
+    }
+  })
+  </script>
+</polymer-element>

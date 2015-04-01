@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="bower_components/webcomponentsjs/webcomponents.js"></script>
+
+  <link rel="import" href="bower_components/polymer/polymer.html">
+  <link rel="import" href="bower_components/core-collapse/core-collapse.html">
+  <link rel="import" href="bower_components/paper-button/paper-button.html">
+  <link rel="import" href="bower_components/paper-tabs/paper-tabs.html">
+  <link rel="import" href="bower_components/code-mirror/code-mirror.html">
+  <link rel="import" href="bower_components/core-pages/core-pages.html">
+
+  <link rel="import" href="elements/input-data.html">
+  <link rel="import" href="elements/graph.html">
+  <link rel="import" href="elements/method-selector.html">
+  <style>
+   body {
+     height: 2000px;
+   }
+
+   core-pages {
+     height: 100px;
+   }
+  </style>
+</head>
+
+<body unresolved vertical layout>
+  <template is="auto-binding">
+  <div>
+  <demo-graph points="{{points}}" fun="{{func}}" interpolation="{{interpolation}}" residual="{{residual}}"></demo-graph>
+
+  Норма невязки: {{residual}}
+</div>
+<div>
+    <h4>Входные данные</h4>
+      <input-data x="{{points}}" y="{{values}}" func="{{func}}"></input-data>
+</div>
+<div>
+    <h4>Метод</h4>
+    <method-selector x="{{points}}" y="{{values}}" interpolation="{{interpolation}}"></method-selector>
+</div>
+</template>
+</body>

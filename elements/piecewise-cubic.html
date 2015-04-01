@@ -1,0 +1,26 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../bower_components/math-tex/math-tex.html">
+
+<polymer-element name="piecewise-cubic">
+  <template>
+    <h4>Общая схема</h4>
+    На каждом отрезке интерполирующая функция равна некоторому многочлену степени 3:
+    <math-tex mode="display">
+      \left. Pf(x) \, \middle| \, x ∈ [x_i, x_{i+1}] \right. ≡ P_i(x) ≡ a_{1,i} + a_{2,i} (x - x_i) + a_{3,i} (x - x_i)^2 + a_{4,i}(x-x_i)^2(x-x_{i+1})
+    </math-tex>
+    На многочлен наложены следующие условия:
+    <ul>
+      <li>Совпадает со значением исходной функции в крайних точках отрезка:
+        <math-tex mode=display>P_i(x_i) = f(x_i), \; P_{i+1}(x_{i+1}) = f(x_{i+1})</math-tex>
+      <li>Значения производной в крайних точках определяются в зависимости от конкретного метода:
+        <math-tex mode=display>P'_i(x_i) = d_i, \; P'_i(x_{i+1}) = d_{i+1}</math-tex> (всего n параметров <math-tex>d_{1…n}</math-tex>)
+    </ul>
+
+    <h4>Недостающие граничные условия</h4>
+  </template>
+  <script>
+  Polymer();
+  </script>
+</polymer-element>

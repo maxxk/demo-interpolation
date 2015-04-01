@@ -1,0 +1,66 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../bower_components/math-tex/math-tex.html">
+
+<polymer-element name="piecewise-linear" attributes="active x y interpolation">
+  <template>
+    <style>
+    table tr td {
+      white-space: nowrap;
+    }
+    </style>
+    На каждом отрезке <math-tex>[x_i, x_{i+1}]</math-tex> интерполирующая функция <math-tex>I_2 f</math-tex> равна линейной функции, значение которой совпадает со значением исходной в крайних точках отрезка:
+    <math-tex mode=display>
+      \left. I_2 f(x) \, \big| \, x ∈ [x_i, x_{i+1}] \right. ≡ f(x_i) + (x - x_i) \frac{f(x_{i+1}) - f(x_i)}{x_{i+1} - x_i}
+    </math-tex>
+
+    <h4>Промежуточные данные</h4>
+    <table>
+      <tr>
+        <td>i</td>
+        <template repeat="{{d, i in divDiff}}">
+          <td>{{i}}</td>
+        </template>
+      </tr>
+      <tr>
+        <td><math-tex>f(x_i; x_{i+1})</math-tex></td>
+        <template repeat="{{d in divDiff}}">
+          <td>{{d | toFixed(3)}}</td>
+        </template>
+      </tr>
+    </table>
+  </template>
+  <script>
+  Polymer({
+    toFixed: function(value, precision) {
+      return Number(value).toFixed(precision)
+    },
+    getDivDiff: function(active, x, y) {
+      if (!active) return [];
+      var res = [];
+      for (var i = 0; i < x.length - 1; i++) {
+        res.push((y[i+1] - y[i])/(x[i+1] - x[i]))
+      }
+      return res;
+    },
+    getInterpolation: function(active, x, y, divDiff) {
+      if (!active) return function() { return 0;}
+      return function(t) {
+        var N = x.length;
+        for (var i = 0; i < divDiff.length-1; i++) {
+          if (t <= x[i+1]) return y[i] + (t - x[i]) * divDiff[i];
+        }
+        return y[N-2] + (t - x[N-2])*divDiff[N-2];
+      }
+    },
+    x: [],
+    y: [],
+
+    computed: {
+      divDiff: "getDivDiff(active, x, y)",
+      interpolation: "getInterpolation(active, x, y, divDiff)"
+    }
+  });
+  </script>
+</polymer-element>

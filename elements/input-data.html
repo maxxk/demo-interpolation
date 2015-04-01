@@ -1,0 +1,123 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/core-pages/core-pages.html">
+<link rel="import" href="../bower_components/code-mirror/code-mirror.html">
+
+<polymer-element name="input-data" attributes="kind fun text points left right x y func">
+  <template>
+    <style>
+      code-mirror {
+        height: 4em;
+        width: 80em;
+        overflow-y: scroll;
+      }
+      input:invalid {
+        border-color: red;
+      }
+
+      paper-tabs {
+        display: inline-block;
+      }
+
+      core-pages, core-pages > * {
+        height: 150px;
+      }
+    </style>
+
+    <section layout vertical is="auto-binding">
+      <paper-tabs id="input-data" selected="{{kind}}" noink>
+
+        <paper-tab >Заданная функция
+        </paper-tab>
+        <paper-tab >Файл (не поддерживается)
+        </paper-tab>
+      </paper-tabs>
+
+      <core-pages   selected="{{kind}}" notap >
+        <div>
+        <code-mirror id="input-function" mode="javascript" value="{{fun}}">return x*sin(x);</code-mirror>
+        <p><label for="pointsCount">Число точек</label> <input name="pointsCount" type=number value="{{points}}">
+        <p><label for="left">Отрезок</label>
+          <input type=number step=any value="{{left}}">;<input type=number step=any value="{{right}}">
+      </div>
+      <div>
+
+        <code-mirror id="input-text" value="{{text}}"></code-mirror>
+      </div>
+      </core-pages>
+
+      <h4>Входные данные</h4>
+      <table>
+        <tr>
+          <td>x</td>
+          <template repeat="{{xi in x}}">
+            <td>{{xi | toFixed(precision)}}</td>
+          </template>
+        </tr>
+        <tr>
+          <td>f(x)</td>
+          <template repeat="{{yi in y}}">
+            <td>{{yi | toFixed(precision)}}</td>
+          </template>
+        </tr>
+      </table>
+
+    </section>
+  </template>
+  <script>
+    Polymer('input-data', {
+      attached: function() {
+        var self = this;
+        var mirror = this.$['input-function'].mirror;
+        mirror.on('change', function() {
+          self.job('change', function() {
+            self.fun = mirror.getValue();
+          }, 200);
+        })
+        this.$['input-function'].valueChanged = null;
+      },
+       kind: 0,
+      points: 5,
+      left: -1,
+      right: 1,
+      precision: 2,
+      func: function() { return 0; },
+      rangeTo: function(n) {
+        var arr = [];
+        for (var i = 0; i < n; i++) {
+          arr.push(i);
+        }
+        return arr;
+      },
+      computeX: function(points, left, right) {
+        return this.rangeTo(points).map(function(i) {
+          return left + (right-left)*i/(points-1);
+        });
+      },
+      computeY: function(func, x) {
+        return x.map(func);
+      },
+      toFixed: function(value, precision) {
+        return Number(value).toFixed(precision)
+      },
+      zero: function() { return 0; },
+      mkFun: function(fun) {
+        try {
+        return new Function('x', "try { with (Math) {" + fun + "} } catch(e) { return NaN }")
+      } catch(e) {
+        console.error(e);
+        return this.zero;
+      }
+      },
+      computed: {
+        x: "kind ? [] : computeX(points, left, right)",
+        y: "kind ? [] : computeY(func, x)",
+        func: "kind ? zero : mkFun(fun)"
+      }
+
+
+    })
+  </script>
+</polymer-element>
