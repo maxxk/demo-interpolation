@@ -1,7 +1,8 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<link rel="import" href="../bower_components/font-roboto/roboto.html">
 <link rel="import" href="../bower_components/math-tex/math-tex.html">
+
+<link rel=import href=app-globals.html>
 
 <polymer-element name="piecewise-linear" attributes="active x y interpolation">
   <template>
@@ -10,6 +11,7 @@
       white-space: nowrap;
     }
     </style>
+    <app-globals id=globals></app-globals>
     На каждом отрезке <math-tex>[x_i, x_{i+1}]</math-tex> интерполирующая функция <math-tex>I_2 f</math-tex> равна линейной функции, значение которой совпадает со значением исходной в крайних точках отрезка:
     <math-tex mode=display>
       \left. I_2 f(x) \, \big| \, x ∈ [x_i, x_{i+1}] \right. ≡ f(x_i) + (x - x_i) \frac{f(x_{i+1}) - f(x_i)}{x_{i+1} - x_i}
@@ -26,18 +28,15 @@
       <tr>
         <td><math-tex>f(x_i; x_{i+1})</math-tex></td>
         <template repeat="{{d in divDiff}}">
-          <td>{{d | toFixed(3)}}</td>
+          <td>{{d | toFixed }}</td>
         </template>
       </tr>
     </table>
   </template>
   <script>
   Polymer({
-    toFixed: function(value, precision) {
-      return Number(value).toFixed(precision)
-    },
     getDivDiff: function(active, x, y) {
-      if (!active) return [];
+      if (active === null) return [];
       var res = [];
       for (var i = 0; i < x.length - 1; i++) {
         res.push((y[i+1] - y[i])/(x[i+1] - x[i]))
@@ -45,7 +44,7 @@
       return res;
     },
     getInterpolation: function(active, x, y, divDiff) {
-      if (!active) return function() { return 0;}
+      if (active === null) return function() { return 0;}
       return function(t) {
         var N = x.length;
         for (var i = 0; i < divDiff.length-1; i++) {

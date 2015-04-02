@@ -1,0 +1,23 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<polymer-element name="app-globals">
+  <script>
+  (function() {
+    // these variables are shared by all instances of app-globals
+    var data = {
+      precision: 5
+    }
+    PolymerExpressions.prototype.toFixed = function(num) {
+      var n = Number(num);
+      if (isNaN(n)) return "";
+      return n.toFixed(data.precision);
+    }
+    Polymer({
+      ready: function() {
+        // copy global values into instance properties
+        this.data = data;
+      }
+    });
+  })();
+  </script>
+</polymer-element>

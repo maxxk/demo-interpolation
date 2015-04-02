@@ -1,9 +1,12 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<link rel="import" href="../bower_components/font-roboto/roboto.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../bower_components/core-pages/core-pages.html">
 <link rel="import" href="../bower_components/code-mirror/code-mirror.html">
+<link rel="import" href="../bower_components/math-tex/math-tex.html">
+
+<link rel=import href=app-globals.html>
 
 <polymer-element name="input-data" attributes="kind fun text points left right x y func">
   <template>
@@ -27,39 +30,33 @@
     </style>
 
     <section layout vertical is="auto-binding">
-      <paper-tabs id="input-data" selected="{{kind}}" noink>
-
-        <paper-tab >Заданная функция
-        </paper-tab>
-        <paper-tab >Файл (не поддерживается)
-        </paper-tab>
-      </paper-tabs>
-
-      <core-pages   selected="{{kind}}" notap >
-        <div>
+      <app-globals id="globals"></app-globals>
+      <div>
         <code-mirror id="input-function" mode="javascript" value="{{fun}}">return x*sin(x);</code-mirror>
         <p><label for="pointsCount">Число точек</label> <input name="pointsCount" type=number value="{{points}}">
         <p><label for="left">Отрезок</label>
           <input type=number step=any value="{{left}}">;<input type=number step=any value="{{right}}">
+        <p><paper-checkbox checked="{{chebyshev}}" label="По нулям многочлена Чебышёва"></paper-checkbox></p>
+        <p>Нули многочлена Чебышёва степени <math-tex>n</math-tex> на отрезке <math-tex>\left[ a, b \right]</math-tex> определяются следующим образом:</p>
+        <math-tex type=display>
+          x_m = \frac{a+b}{2} + \frac{b-a}{2} \cos \frac{\pi(2m - 1)}{2n}
+        </math-tex>
       </div>
-      <div>
-
+      <p> <label for="inputText">Дополнительные точки</label>
         <code-mirror id="input-text" value="{{text}}"></code-mirror>
-      </div>
-      </core-pages>
 
       <h4>Входные данные</h4>
       <table>
         <tr>
           <td>x</td>
           <template repeat="{{xi in x}}">
-            <td>{{xi | toFixed(precision)}}</td>
+            <td>{{xi | toFixed }}</td>
           </template>
         </tr>
         <tr>
           <td>f(x)</td>
           <template repeat="{{yi in y}}">
-            <td>{{yi | toFixed(precision)}}</td>
+            <td>{{yi | toFixed }}</td>
           </template>
         </tr>
       </table>
@@ -78,11 +75,10 @@
         })
         this.$['input-function'].valueChanged = null;
       },
-       kind: 0,
+      chebyshev: false,
       points: 5,
       left: -1,
       right: 1,
-      precision: 2,
       func: function() { return 0; },
       rangeTo: function(n) {
         var arr = [];
@@ -91,16 +87,19 @@
         }
         return arr;
       },
-      computeX: function(points, left, right) {
-        return this.rangeTo(points).map(function(i) {
-          return left + (right-left)*i/(points-1);
-        });
+      computeX: function(points, left, right, chebyshev) {
+        return this.rangeTo(points).map(
+          !chebyshev ?
+            function(i) {
+              return left + (right-left)*i/(points-1);
+            }
+          :
+            function(i) {
+              return (left + right)/2 + (right - left)/2*Math.cos(Math.PI*(2*(points - i)-1)/(2*points));
+            });
       },
       computeY: function(func, x) {
         return x.map(func);
-      },
-      toFixed: function(value, precision) {
-        return Number(value).toFixed(precision)
       },
       zero: function() { return 0; },
       mkFun: function(fun) {
@@ -112,9 +111,9 @@
       }
       },
       computed: {
-        x: "kind ? [] : computeX(points, left, right)",
-        y: "kind ? [] : computeY(func, x)",
-        func: "kind ? zero : mkFun(fun)"
+        x: "computeX(points, left, right, chebyshev)",
+        y: "computeY(func, x)",
+        func: "mkFun(fun)"
       }
 
 

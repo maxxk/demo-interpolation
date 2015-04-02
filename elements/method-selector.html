@@ -1,28 +1,39 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<link rel="import" href="../bower_components/font-roboto/roboto.html">
-<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
-<link rel="import" href="../bower_components/core-pages/core-pages.html">
 
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/core-pages/core-pages.html">
+<link rel="import" href="../bower_components/paper-dropdown/paper-dropdown.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/core-menu/core-menu.html">
+
+<link rel=import href=m-newton.html>
 <link rel="import" href="piecewise-linear.html">
 
-<polymer-element name="method-selector" attributes="x y interpolation">
+<polymer-element name="method-selector" attributes="x y interpolation method">
   <template>
+    <paper-dropdown-menu id=dd-menu label="Метод">
+      <paper-dropdown class=dropdown>
+        <core-menu class=menu id=menu selected="{{method}}">
+          <paper-item name=newton>Ньютона</paper-item>
+          <paper-item name=piecewise-linear label="Кусочно-линейная">Кусочно-линейная</paper-item>
+        </core-menu>
+      </paper-dropdown>
+    </paper-dropdown-menu>
     <paper-tabs id="input-data" selected="{{kind}}" noink>
 
-      <paper-tab >Кусочно-линейная
-      </paper-tab>
     </paper-tabs>
 
-    <core-pages   selected="{{kind}}" notap >
-      <piecewise-linear id="piecewise-linear" x="{{x}}" y="{{y}}" active="{{kind === 0}}"></piecewise-linear>
-  </core-pages>
+    <core-pages id=pages selectedItem="{{selectedItem}}" selected="{{method}}" selectedAttribute="active" notap >
+      <m-newton name=newton x="{{x}}" y="{{y}}"></m-newton>
+      <piecewise-linear name=piecewise-linear id="piecewise-linear" x="{{x}}" y="{{y}}"></piecewise-linear>
+    </core-pages>
   </template>
   <script>
   Polymer({
-    kind: 0,
+    method: 'piecewise-linear',
     computed: {
-      interpolation: "$['piecewise-linear'].interpolation"
+      interpolation: "selectedItem.interpolation"
     }
   });
   </script>

@@ -1,0 +1,105 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/math-tex/math-tex.html">
+
+<link rel=import href=app-globals.html>
+
+<polymer-element name="newton-shift" attributes="active x y interpolation">
+  <template>
+    <app-globals id=globals></app-globals>
+    <p>В рамках метода Ньютона со сдвигами на каждом отрезке <math-tex>\left[ x_i, x_{i+1} \right] \; (i=1…n-k)</math-tex> интерполирующая функция <math-tex>Pf</math-tex> совпадает с интерполяционным многочленом Лагранжа <math-tex>P_i</math-tex> степени <math-tex>k</math-tex>, построенным по точкам <math-tex>x_i,…,x_{i+k}</math-tex>. На отрезке <math-tex>\left[ x_{n-k}, x_n \right]</math-tex> <math-tex>Pf</math-tex> совпадает с последним таким многочленом <math-tex>P_{n-k}</math-tex>.
+
+    <p>Для вычисления значения таких многочленов, как и в обычном методе Ньютона, используются <b>разделённые разности</b>:
+    <ol>
+      <li>0-го порядка: <math-tex>f(x_i) ≡ f(x_i)</math-tex>
+      <li>1-го порядка: <math-tex>f(x_i; x_j) ≡ \frac{f(x_j) - f(x_i)}{x_j - x_i}</math-tex>
+      <li>k-го порядка: <math-tex>f(x_i; … x_{i+k}) ≡ \frac{f(x_{i+1}; … ; x_{i+k}) - f(x_i; …; x_{i+k-1})}{x_{i+k} - x_i}</math-tex>
+    </ol>
+
+    <p>Пусть вычислены разделённые разности <math-tex>f(x_1), f(x_1; x_2), …, f(x_1; …; x_n)</math-tex>. Тогда значение интерполяционного многочлена определяется с использованием схемы Горнера:
+    <math-tex mode=display>(Pf)(x) = f(x_1) + (x-x_1)(f(x_1; x_2) + (x - x_2)(f(x_1; x_2; x_3) + … + (x - x_{n-1})f(x_1; …; x_n) … )).</math-tex>
+
+    В отличие от обычного метода Ньютона, здесь используются разделённые разности <math-tex>k</math-tex>-го порядка, от <math-tex>f(x_1; …; x_{k+1})</math-tex> до <math-tex>f(x_{n-k}; … x_n)</math-tex>
+
+    <h4>Параметры</h4>
+    <label>Значение <math-tex>k</math-tex></label>
+    <input type=number min=1 max={{x.length}} value={{k}}>
+
+    <h4>Промежуточные данные</h4>
+    Таблица разделённых разностей (для экономии памяти, хранится только диагональ)
+    <table>
+      <tr>
+        <td>Точка</td>
+        <template repeat="{{i in x}}"><td rowspan=2>{{i | toFixed}}</td></template>
+      </tr>
+      <tr><td>Порядок</td></tr>
+    <template repeat="{{r, i in divDiff}}">
+      <tr>
+        <td>{{i+1}}</td>
+        <template repeat="{{c, j in r}}">
+          <td style="font-weight: {{i == j ? 'bold' : 'normal'}}">
+            {{c | toFixed}}
+          </td>
+        </template>
+      </tr>
+    </template>
+    </table>
+
+  </template>
+  <script>
+  Polymer({
+    getDivDiff: function(active, x, y, k) {
+      var res = [], n = x.length;
+      if (active === 0) return res;
+
+      res.push(y.slice(0));
+      for (var i = 1; i < k; i++) {
+        res[i] = [];
+      }
+
+      // P_k coefficients
+      for (var i = (n-k+1); i < n; i++) {
+        console.log(i - (n-k+1));
+        var p = res[i - (n-k+1)];
+        for (var j = n-1; j > i-1; j--) {
+          res[i][j] = (p[j] - p[j-1])/(x[j] - x[j-i + (n-k-1)])
+        }
+      }
+
+      // shift
+      for (var i = (n-k); i >= 0; i--) {
+        for (var j = )
+
+      }
+
+      for (var i = 1; i < n; i++) {
+        res[i] = [];
+        p = res[i-1];
+        for (var j = n-1; j > i-1; j-- ) {
+          res[i][j] = (p[j] - p[j-1]) / (x[j] - x[j-i]);
+        }
+      }
+
+      return res;
+    },
+
+    getInterpolation: function(active, x, y, divDiff) {
+      var total = divDiff.length-1;
+
+      return function(t) {
+        var res = divDiff[total][total];
+        for (var i = total-1; i >= 0; i--) {
+          res = res * (t - x[i]);
+          res += divDiff[i][i];
+        }
+        return res;
+      }
+    },
+
+    computed: {
+      divDiff: "getDivDiff(active, x, y, k)",
+      interpolation: "getInterpolation(active, x, y, divDiff)"
+    }
+  });
+  </script>
+</polymer-element>

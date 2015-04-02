@@ -16,83 +16,42 @@
     </div>
   </template>
   <script>
-  function makeGraph(el) {
-
-/**************************************
- * Simple test data generator
- */
-function sinAndCos() {
-  var sin = [],sin2 = [],
-      cos = [], points = [];
-
-  //Data is represented as an array of {x,y} pairs.
-  for (var i = 0; i < 100; i++) {
-    sin.push({x: i, y: Math.sin(i/10)});
-    sin2.push({x: i, y: Math.sin(i/10) *0.25 + 0.5});
-    cos.push({x: i, y: .5 * Math.cos(i/10)});
-    if (i%10 === 0)
-      points.push({x: i, y: i % 10 === 0 ? 0 : undefined });
-  }
-
-  //Line chart data should be sent as an array of series objects.
-  return [
-    {
-      values: sin,      //values - represents the array of {x,y} data points
-      key: 'Sine Wave', //key  - the name of the series.
-      color: '#ff7f0e'  //color - optional: choose your own line color.
-    },
-    {
-      values: cos,
-      key: 'Cosine Wave',
-      color: '#2ca02c'
-    },
-    {
-      values: sin2,
-      key: 'Another sine wave',
-      color: '#7777ff',
-      area: true      //area - set to true if you want this line to turn into a filled area chart.
-    },
-    {
-      values: points,
-      key: 'points',
-      color: 'black'
-    }
-  ];
-}
-  }
   Polymer('demo-graph', {
     updateChanged: function() {
-      var self = this;
-      this.job('graph', function() {
-        self.residual = self.display(self.interpolation, self.points, self.fun, self.$.graph);
-      }, 500);
+      this.job('graph', this.updateDisplay, 500);
     },
     computed: {
-      update: "[interpolation, points, fun]",
-    //  residual: "getResidual(interpolation, points, fun)"
+      update: "[interpolation, left, right, total, fun]",
     },
-    getResidual: function(){
-      return this.residual_;
+    updateDisplay: function() {
+      var r = this.display(this.interpolation, this.left, this.right, this.fun, this.$.graph)
+      this.residual = r;
     },
     publish: {
-      residual: "0",
+      residual: {
+        value: Number(0).toExponential(),
+        reflect: true
+      },
       interpolation: function() { return 0; },
-      points: [0],
+      left: -1,
+      right: 1,
       fun: function() { return 0;  },
-      display: function(interpolation, points, fun, el) {
+      display: function(interpolation, left, right, fun, el) {
         var dataInterpolation = [],
           dataPoints = [], dataFun = [], dataResidual = [],
-          total = 500, span = points[points.length-1] - points[0],
-          residual = 0;
+          span = right-left, residual = 0;
+        total = 541;
         for (var i = 0; i < total; i++) {
-          var x = points[0] + span*i/total;
+          var x = left + span*i/total;
           dataInterpolation.push({ x: x, y: interpolation(x) });
           if (fun) {
             dataFun.push({ x: x, y: fun(x)});
             dataResidual.push({x: x, y: Math.abs(fun(x) - interpolation(x))});
-            residual += Math.abs(fun(x) - interpolation(x))*span/total;
           }
         }
+        residual = dataResidual.reduce(function(p, c) {
+          return Math.max(p, c.y);
+        }, 0);
         data = [];
         data.push({
           values: dataInterpolation,
@@ -125,11 +84,11 @@ function sinAndCos() {
 
           chart.xAxis     //Chart x-axis settings
               .axisLabel('x')
-              .tickFormat(d3.format('.02f'));
+              .tickFormat(d3.format('.05f'));
 
           chart.yAxis     //Chart y-axis settings
               .axisLabel('y')
-              .tickFormat(d3.format('.02f'));
+              .tickFormat(d3.format('.05f'));
 
           /* Done setting the chart up? Time to render it!*/
           var myData = data;   //You need data...
@@ -140,10 +99,9 @@ function sinAndCos() {
 
           //Update the chart when window resizes.
           nv.utils.windowResize(function() { chart.update() });
-          return residual.toExponential();
-          //this.residual = residual;
           return chart;
         });
+        return Number(residual).toExponential();
       }
     }
   });

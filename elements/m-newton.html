@@ -1,0 +1,80 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/math-tex/math-tex.html">
+
+<link rel=import href=app-globals.html>
+
+<polymer-element name="m-newton" attributes="active x y interpolation">
+  <template>
+    <app-globals id=globals></app-globals>
+    <p>Метод Ньютона позволяет вычислять значение интерполяционного многочлена Лагранжа в заданной точке с меньшими вычислительными затратами и вычислительной погрешностью, чем по определению многочлена Лагранжа.
+
+    <p>Для этого используются <b>Разделённые разности</b>:
+    <ol>
+      <li>0-го порядка: <math-tex>f(x_i) ≡ f(x_i)</math-tex>
+      <li>1-го порядка: <math-tex>f(x_i; x_j) ≡ \frac{f(x_j) - f(x_i)}{x_j - x_i}</math-tex>
+      <li>k-го порядка: <math-tex>f(x_i; … x_{i+k}) ≡ \frac{f(x_{i+1}; … ; x_{i+k}) - f(x_i; …; x_{i+k-1})}{x_{i+k} - x_i}</math-tex>
+    </ol>
+
+    <p>Пусть вычислены разделённые разности <math-tex>f(x_1), f(x_1; x_2), …, f(x_1; …; x_n)</math-tex>. Тогда значение интерполяционного многочлена определяется с использованием схемы Горнера:
+    <math-tex mode=display>(Pf)(x) = f(x_1) + (x-x_1)(f(x_1; x_2) + (x - x_2)(f(x_1; x_2; x_3) + … + (x - x_{n-1})f(x_1; …; x_n) … )).</math-tex>
+
+    <h4>Промежуточные данные</h4>
+    Таблица разделённых разностей (для экономии памяти, хранится только диагональ)
+    <table>
+      <tr>
+        <td>Точка</td>
+        <template repeat="{{i in x}}"><td rowspan=2>{{i | toFixed}}</td></template>
+      </tr>
+      <tr><td>Порядок</td></tr>
+    <template repeat="{{r, i in divDiff}}">
+      <tr>
+        <td>{{i+1}}</td>
+        <template repeat="{{c, j in r}}">
+          <td style="font-weight: {{i == j ? 'bold' : 'normal'}}">
+            {{c | toFixed}}
+          </td>
+        </template>
+      </tr>
+    </template>
+    </table>
+
+  </template>
+  <script>
+  Polymer({
+    getDivDiff: function(active, x, y) {
+      var res = [], n = x.length;
+      if (active === 0) return res;
+
+      res.push(y.slice(0));
+      for (var i = 1; i < n; i++) {
+        res[i] = [];
+        var p = res[i-1];
+        for (var j = n-1; j > i-1; j-- ) {
+          res[i][j] = (p[j] - p[j-1]) / (x[j] - x[j-i]);
+        }
+      }
+
+      return res;
+    },
+
+    getInterpolation: function(active, x, y, divDiff) {
+      var total = divDiff.length-1;
+
+      return function(t) {
+        var res = divDiff[total][total];
+        for (var i = total-1; i >= 0; i--) {
+          res = res * (t - x[i]);
+          res += divDiff[i][i];
+        }
+        return res;
+      }
+    },
+
+    computed: {
+      divDiff: "getDivDiff(active, x, y)",
+      interpolation: "getInterpolation(active, x, y, divDiff)"
+    }
+  });
+  </script>
+</polymer-element>

@@ -13,31 +13,39 @@
   <link rel="import" href="elements/input-data.html">
   <link rel="import" href="elements/graph.html">
   <link rel="import" href="elements/method-selector.html">
+  <link rel="import" href="elements/app-globals.html">
   <style>
    body {
      height: 2000px;
+     font-family: sans-serif;
+     font-size: 14pt;
    }
 
    core-pages {
      height: 100px;
+   }
+
+   .bold {
+     font-weight: bold;
    }
   </style>
 </head>
 
 <body unresolved vertical layout>
   <template is="auto-binding">
+  <app-globals id="globals"></app-globals>
   <div>
-  <demo-graph points="{{points}}" fun="{{func}}" interpolation="{{interpolation}}" residual="{{residual}}"></demo-graph>
+    <demo-graph left="{{left}}" right="{{right}}" fun="{{func}}" interpolation="{{interpolation}}" residual="{{residual}}"></demo-graph>
 
-  Норма невязки: {{residual}}
-</div>
-<div>
-    <h4>Входные данные</h4>
-      <input-data x="{{points}}" y="{{values}}" func="{{func}}"></input-data>
-</div>
-<div>
-    <h4>Метод</h4>
-    <method-selector x="{{points}}" y="{{values}}" interpolation="{{interpolation}}"></method-selector>
-</div>
+    <div>Норма невязки: {{residual}}</div> <div>Точность вывода <input type=number min=0 max=20 value="{{$.globals.data.precision}}"></div>
+  </div>
+  <div>
+      <h4>Входные данные</h4>
+        <input-data x="{{points}}" y="{{values}}" left="{{left}}" right="{{right}}" func="{{func}}"></input-data>
+  </div>
+  <div>
+      <h4>Метод</h4>
+      <method-selector x="{{points}}" y="{{values}}" interpolation="{{interpolation}}"></method-selector>
+  </div>
 </template>
 </body>
